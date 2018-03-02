@@ -21,7 +21,20 @@ Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.
 ## curl -X POST https://ultraawesome.servicebus.windows.net/awesomequeue/messages -H "Authorization: SharedAccessSignature sr=https%3a%2f%2fultraawesome.servicebus.windows.net%2fawesomequeue%2f&sig=WuIKwkBuB%2fjxMgK6x79o3Xrf4nKZtWX9defu7HLdzWg%3d&se=1422636195&skn=Send" -H "Conent-Type:application/json" -d "I am a message"
 
 
-GET https://WALL-E.servicebus.windows.net/telemetry/messages?timeout=60&api-version=2015-01
+
+
+POST https://WALL-E.servicebus.windows.net/telemetry/messages
+Content-Type: application/json
 Accept: application/json
-Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Fcommands&sig=BccAI8EuU8i%2BMVn/yHLDsoy%2BuayI17dSkIesuiFHJTc%3D&se=1519829704&skn=SendListen
+Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=H6tdAFYI0B33mDTfOsNNyz0RgIO/ScOlSzx/kwSTZa0%3D&se=1519838758&skn=SendListen
+
+{
+    "Event": "MyTestTopic"
+}
+###
+
+
+DELETE https://WALL-E.servicebus.windows.net/telemetry/subscriptions/monitoring/messages/head/?api-version=2015-01
+Accept: application/json
+Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=H6tdAFYI0B33mDTfOsNNyz0RgIO/ScOlSzx/kwSTZa0%3D&se=1519838758&skn=SendListen
 ###
