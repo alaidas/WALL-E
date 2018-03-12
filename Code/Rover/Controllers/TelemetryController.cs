@@ -1,10 +1,9 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using WALLE.Link;
 
 namespace WALLE.Rover.Controllers
@@ -13,22 +12,26 @@ namespace WALLE.Rover.Controllers
     public class TelemetryController : Controller
     {
         private readonly ILogger<TelemetryController> _logger;
-        private readonly ConcurrentQueue<string> _events = new ConcurrentQueue<string>();
+        private readonly ILinkClient _linkClient;
 
         public TelemetryController(ILinkClient linkClient, ILogger<TelemetryController> logger)
         {
             _logger = logger;
-            _events.Enqueue("sdfsdfds");
+            _linkClient = linkClient;
         }
 
-        [HttpGet("Event")]
-        public async Task<IActionResult> GetEvent()
+        [HttpPost]
+        public async Task<IActionResult> PostEvent([FromBody]string message)
         {
-            if (_events.TryDequeue(out string result))
-                return Content(result, "text/html", Encoding.UTF8);
+            await _linkClient.SendEventAsync(new Link.Dto.Event
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreationTime = DateTime.UtcNow,
+                Sender = nameof(Rover),
+                Content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { Message = message }))
+            });
 
-            return StatusCode((int)HttpStatusCode.NoContent);
+            return NoContent();
         }
-
     }
 }

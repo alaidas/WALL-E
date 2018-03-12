@@ -23,4 +23,4 @@ def get_auth_token(sb_name, eh_name, sas_name, sas_value):
                      .format(uri, signature, expiry, sas_name)
             }
 
-print(get_auth_token("WALL-E", "telemetry", "SendListen", "5wyITnYA6wM9/R0IMNlHE/Z0tY/EPDbjVwzxLPdPqY0="))
+print(get_auth_token("WALL-E", "telemetry", "Telemetry", "67cYgeLhvHdnC4zHorBnKUBlE/2a4ynTOCY3wsNatbc="))

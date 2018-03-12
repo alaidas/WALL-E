@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using WALLE.Link.Dto;
@@ -14,9 +19,20 @@ namespace WALLE.Link
     public class LinkClientHttp : ILinkClient
     {
         private readonly ILogger<LinkClientHttp> _logger;
+        private readonly string _telemetryUrl;
+        private readonly string _commandsUrl;
+        private readonly string _sasToken;
 
-        public LinkClientHttp(ILogger<LinkClientHttp> logger)
+        public LinkClientHttp(IConfiguration configuration, ILogger<LinkClientHttp> logger)
         {
+            IConfigurationSection config = configuration.GetSection("Link").GetSection("Http");
+            _telemetryUrl = config["TelemetryUrl"];
+            _commandsUrl = config["CommandsUrl"];
+
+            config = config.GetSection("SAS");
+            _sasToken = CreateSasToken(config["Url"], config["KeyName"], config["Key"]);
+            Console.WriteLine($"SAS: {_sasToken}");
+
             _logger = logger;
         }
 
@@ -26,8 +42,8 @@ namespace WALLE.Link
 
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=0Uihmcb8uD7FwQN0agIkuxRZIal8G5XrIFFFngWHqyE%3D&se=1520429951&skn=SendListen");
-                HttpResponseMessage result = await client.PostAsync("https://WALL-E.servicebus.windows.net/telemetry/messages", new StringContent(json, Encoding.UTF8, "application/json"));
+                client.DefaultRequestHeaders.Add("Authorization", _sasToken);
+                HttpResponseMessage result = await client.PostAsync(_telemetryUrl, new StringContent(json, Encoding.UTF8, "application/json"));
 
                 result.EnsureSuccessStatusCode();
             }
@@ -46,12 +62,12 @@ namespace WALLE.Link
                 {
                     using (var client = new HttpClient())
                     {
-                        client.DefaultRequestHeaders.Add("Authorization", "SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=rL1DaUwqRg14Oo7YDdtkDel98GmlKI6D%2B5ueJf8yzxk%3D&se=1520420493&skn=SendListen");
+                        client.DefaultRequestHeaders.Add("Authorization", _sasToken);
                         client.DefaultRequestHeaders.Add("Accept", "application/json");
 
                         while (!cancelToken.IsCancellationRequested)
                         {
-                            HttpResponseMessage response = await client.DeleteAsync("https://WALL-E.servicebus.windows.net/telemetry/subscriptions/monitoring/messages/head/?api-version=2015-01", cancelToken.Token);
+                            HttpResponseMessage response = await client.DeleteAsync(_commandsUrl, cancelToken.Token);
                             if (response == null || response.StatusCode != System.Net.HttpStatusCode.OK)
                             {
                                 await Task.Delay(100, cancelToken.Token);
@@ -79,7 +95,7 @@ namespace WALLE.Link
             {
                 try
                 {
-                    while(!cancelToken.IsCancellationRequested)
+                    while (!cancelToken.IsCancellationRequested)
                     {
                         if (events.TryDequeue(out Event @event))
                             onEvent(@event);
@@ -87,7 +103,7 @@ namespace WALLE.Link
                         await Task.Delay(50, cancelToken.Token);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, ex.Message);
 
@@ -97,6 +113,20 @@ namespace WALLE.Link
             }, cancelToken.Token);
 
             return result;
+        }
+
+        private static string CreateSasToken(string resourceUri, string keyName, string key)
+        {
+            TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
+            const long tenYears = 60 * 60 * 24 * 356 * 10;
+
+            string expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + tenYears);
+            string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
+
+            var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+            string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+
+            return string.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}&skn={3}", HttpUtility.UrlEncode(resourceUri), HttpUtility.UrlEncode(signature), expiry, keyName);
         }
     }
 }

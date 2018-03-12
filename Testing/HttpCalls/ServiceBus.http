@@ -26,10 +26,10 @@ Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.
 POST https://WALL-E.servicebus.windows.net/telemetry/messages
 Content-Type: application/json
 Accept: application/json
-Authorization: SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=pQXlJ7uBSyBDHE2Aa5PFDrU71M%2BLVrwLnuWkeg3kvYs%3D&se=1519894747&skn=SendListen
+Authorization: SharedAccessSignature sr=https%3a%2f%2fWALL-E.servicebus.windows.net%2f&sig=xQ1Lwu7wghlwPUcP3fVEPAjdgHJkY9YkI6iAe1W2IZs%3d&se=1828442932&skn=Rover
 
 {
-    "Event": "MyTestTopic"
+    "Content": "MyTestTopic"
 }
 ###
 

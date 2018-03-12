@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WALLE.Link;
+using Swashbuckle.AspNetCore.Swagger;
+using WALLE.Link.Extensions;
 
 namespace WALLE.Rover
 {
@@ -17,8 +17,8 @@ namespace WALLE.Rover
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.private.json", optional: false, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
@@ -31,48 +31,49 @@ namespace WALLE.Rover
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILinkClient, LinkClientHttp>();
-            services.AddMvc();
-
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    using (ServiceProvider sp = services.BuildServiceProvider())
-                    {
-                        var linkClient = sp.GetService<ILinkClient>();
+                services.AddSingleton(Configuration);
+                services.AddHttpLink();
+                services.AddLinkLogger();
 
-                        //using (linkClient.SubscribeForEvents("none", e => _logger.LogInformation($"Received event id: '{e.Id}', created at: '{e.CreationTime}'")))
-                        {
-                            while (true)
-                            {
-                                linkClient.SendEventAsync(new Link.Dto.Event
-                                {
-                                    Id = Guid.NewGuid().ToString(),
-                                    CreationTime = DateTime.UtcNow,
-                                    Sender = nameof(Rover)
-                                });
-                                await Task.Delay(1000);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
+                services.AddMvc();
+                services.AddSwaggerGen(config =>
                 {
-                    _logger.LogError(ex, ex.Message);
-                }
-            });
+                    config.SwaggerDoc("v1", new Info { Title = "WALL-E Rover API", Version = "v1" });
+                    config.DescribeAllEnumsAsStrings();
+                });
+
+                _logger.LogInformation($"{nameof(ConfigureServices)} is done");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+            try
             {
-                app.UseDeveloperExceptionPage();
-            }
+                app.UseLinkLogger();
 
-            app.UseMvc();
+                app.UseMvc();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "WALL-E Rover API");
+                });
+
+                _logger.LogInformation($"{nameof(Configure)} is done");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
         }
     }
 }
