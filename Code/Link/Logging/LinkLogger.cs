@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using WALLE.Link.Dto;
 
 namespace WALLE.Link.Logging
 {
@@ -25,11 +27,12 @@ namespace WALLE.Link.Logging
 
             _linkClient.SendEventAsync(new Dto.Event
             {
+                ContentType = nameof(LogEvent),
                 Sender = _configuration.Sender,
                 CreationTime = DateTime.UtcNow,
                 Id = Guid.NewGuid().ToString(),
                 Content = GetContent(logLevel, state, exception, formatter)
-            }).ContinueWith(result =>
+            }, CancellationToken.None).ContinueWith(result =>
             {
                 if (result.Exception != null)
                     Console.WriteLine(result.Exception.ToString());
@@ -48,9 +51,9 @@ namespace WALLE.Link.Logging
 
         private byte[] GetContent<TState>(LogLevel logLevel, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            string json = JsonConvert.SerializeObject(new
+            string json = JsonConvert.SerializeObject(new LogEvent
             {
-                LogLevel = (int)logLevel,
+                LogLevel = logLevel,
                 Name = _name,
                 Message = formatter(state, exception)
             });

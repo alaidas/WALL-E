@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Swagger;
 using WALLE.Link.Extensions;
+using WALLE.Rover.Dto;
+using WALLE.Rover.Dto.Telemetry;
 
 namespace WALLE.Rover
 {
@@ -43,6 +46,10 @@ namespace WALLE.Rover
                     config.SwaggerDoc("v1", new Info { Title = "WALL-E Rover API", Version = "v1" });
                     config.DescribeAllEnumsAsStrings();
                 });
+
+                services.AddSingleton<TelemetryData>();
+                services.AddSingleton<IHostedService, TelemetryProcessor>();
+                services.AddSingleton<IHostedService, CommandsProcessor>();
 
                 _logger.LogInformation($"{nameof(ConfigureServices)} is done");
             }

@@ -10,6 +10,8 @@ namespace WALLE.Link.Dto
 
         public string Sender { get; set; }
 
+        public string ContentType { get; set; }
+
         public byte[] Content { get; set; }
     }
 }

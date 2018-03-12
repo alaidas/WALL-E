@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace WALLE.Rover.Controllers
                 CreationTime = DateTime.UtcNow,
                 Sender = nameof(Rover),
                 Content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { Message = message }))
-            });
+            }, CancellationToken.None);
 
             return NoContent();
         }

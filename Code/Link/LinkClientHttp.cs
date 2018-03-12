@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -36,20 +35,39 @@ namespace WALLE.Link
             _logger = logger;
         }
 
-        public async Task SendEventAsync(Event @event)
+        public async Task SendEventAsync(Event @event, CancellationToken cancellationToken)
         {
+            Ensure.IsNotNull(@event, nameof(@event));
+            Ensure.IsNotNull(@event.ContentType, nameof(@event.ContentType));
+            Ensure.IsNotNull(@event.Id, nameof(@event.Id));
+            Ensure.IsNotNull(@event.Sender, nameof(@event.Sender));
+            Ensure.IsNotNull(@event.Content, nameof(@event.Content));
+            Ensure.IsMoreThan(@event.CreationTime, DateTime.UtcNow.Date, nameof(@event.CreationTime));
+
             string json = JsonConvert.SerializeObject(@event);
 
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", _sasToken);
-                HttpResponseMessage result = await client.PostAsync(_telemetryUrl, new StringContent(json, Encoding.UTF8, "application/json"));
+                HttpResponseMessage result = await client.PostAsync($"{_telemetryUrl}/messages", new StringContent(json, Encoding.UTF8, "application/json"), cancellationToken);
 
                 result.EnsureSuccessStatusCode();
             }
         }
 
-        public IDisposable SubscribeForEvents(string name, Action<Event> onEvent)
+        public IDisposable SubscribeForTelemetry(string name, Action<Event> onEvent)
+        {
+            Ensure.IsNotNull(name, nameof(name));
+
+            return SubscribeForEvents($"{_telemetryUrl}/subscriptions/{name}/messages/head/?api-version=2015-01", onEvent);
+        }
+
+        public IDisposable SubscribeForCommands(Action<Event> onEvent)
+        {
+            return SubscribeForEvents($"{_commandsUrl}/messages/head/?api-version=2015-01", onEvent);
+        }
+
+        private IDisposable SubscribeForEvents(string url, Action<Event> onEvent)
         {
             var cancelToken = new CancellationTokenSource();
             IDisposable result = new DisposableCancellationToken(cancelToken);
@@ -67,7 +85,7 @@ namespace WALLE.Link
 
                         while (!cancelToken.IsCancellationRequested)
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(_commandsUrl, cancelToken.Token);
+                            HttpResponseMessage response = await client.DeleteAsync(url, cancelToken.Token);
                             if (response == null || response.StatusCode != System.Net.HttpStatusCode.OK)
                             {
                                 await Task.Delay(100, cancelToken.Token);
