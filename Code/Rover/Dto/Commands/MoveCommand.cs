@@ -3,9 +3,7 @@
     internal enum MoveDirection
     {
         Forward = 0,
-        Backward = 1,
-        TrunLeft = 2,
-        TurnRight = 3
+        Backward = 1
     }
 
     internal class MoveCommand

@@ -9,6 +9,7 @@ using WALLE.Link.Dto;
 using WALLE.Rover.Dto;
 using WALLE.Rover.Dto.Commands;
 using WALLE.Rover.Dto.Telemetry;
+using WALLE.Rover.Units;
 
 namespace WALLE.Rover
 {
@@ -16,10 +17,12 @@ namespace WALLE.Rover
     {
         private readonly ILinkClient _linkClient;
         private readonly ILogger<CommandsProcessor> _logger;
+        private readonly UnitsController _unitsController;
 
-        public CommandsProcessor(ILinkClient linkClient, ILogger<CommandsProcessor> logger)
+        public CommandsProcessor(ILinkClient linkClient, UnitsController unitsController, ILogger<CommandsProcessor> logger)
         {
             _linkClient = linkClient;
+            _unitsController = unitsController;
             _logger = logger;
         }
 
@@ -57,18 +60,35 @@ namespace WALLE.Rover
             }
         }
 
-        private void ProcessMove(MoveCommand engineData)
+        private void ProcessMove(MoveCommand moveCommand)
         {
-            switch(engineData.Direction)
+            switch(moveCommand.Direction)
             {
                 case MoveDirection.Forward:
-                    break;
+                    {
+                        _unitsController.Engines.SetLeftEngineData()
+                        break;
+                    }
+
                 case MoveDirection.Backward:
                     break;
-                case MoveDirection.TrunLeft:
+
+                default:
+                    throw new NotSupportedException($"Not supported direction: '{moveCommand.Direction}'");
+            }
+        }
+
+        private void ProcessTurn(TurnCommand turnCommand)
+        {
+            switch (turnCommand.Direction)
+            {
+                case TurnDirection.TrunLeft:
                     break;
-                case MoveDirection.TurnRight:
+                case TurnDirection.TurnRight:
                     break;
+
+                default:
+                    throw new NotSupportedException($"Not supported direction: '{turnCommand.Direction}'");
             }
         }
     }
