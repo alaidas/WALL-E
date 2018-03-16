@@ -66,7 +66,6 @@ namespace WALLE.Rover
             {
                 case MoveDirection.Forward:
                     {
-                        _unitsController.Engines.SetLeftEngineData()
                         break;
                     }
 

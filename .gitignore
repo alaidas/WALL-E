@@ -31,4 +31,5 @@ _ReSharper*/
 #Nuget packages folder
 packages/
 *.private.json
-/Code/.vscode
+*.vscode
+*.DS_Store

@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using WALLE.Link.Extensions;
 using WALLE.Rover.Dto;
 using WALLE.Rover.Dto.Telemetry;
+using WALLE.Rover.Units;
 
 namespace WALLE.Rover
 {
@@ -50,6 +51,7 @@ namespace WALLE.Rover
                 services.AddSingleton<TelemetryData>();
                 services.AddSingleton<IHostedService, TelemetryProcessor>();
                 services.AddSingleton<IHostedService, CommandsProcessor>();
+                services.AddSingleton<UnitsController, UnitsController>();
 
                 _logger.LogInformation($"{nameof(ConfigureServices)} is done");
             }
