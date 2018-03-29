@@ -12,5 +12,7 @@ namespace WALLE.Link
         IDisposable SubscribeForTelemetry(string name, Action<Event> onEvent);
 
         IDisposable SubscribeForCommands(Action<Event> onEvent);
+
+        string GetSasToken(string url, string keyName, string key);
     }
 }

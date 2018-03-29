@@ -29,7 +29,7 @@ namespace WALLE.Link
             _commandsUrl = config["CommandsUrl"];
 
             config = config.GetSection("SAS");
-            _sasToken = CreateSasToken(config["Url"], config["KeyName"], config["Key"]);
+            _sasToken = GetSasToken(config["Url"], config["KeyName"], config["Key"]);
             Console.WriteLine($"SAS: {_sasToken}");
 
             _logger = logger;
@@ -131,20 +131,11 @@ namespace WALLE.Link
             }, cancelToken.Token);
 
             return result;
-        }
+        } 
 
-        private static string CreateSasToken(string resourceUri, string keyName, string key)
+        public string GetSasToken(string url, string keyName, string key)
         {
-            TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
-            const long tenYears = 60 * 60 * 24 * 356 * 10;
-
-            string expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + tenYears);
-            string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
-
-            var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
-            string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
-
-            return string.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}&skn={3}", HttpUtility.UrlEncode(resourceUri), HttpUtility.UrlEncode(signature), expiry, keyName);
+            return SasTokenGenerator.CreateSasToken(url, keyName, key);
         }
     }
 }

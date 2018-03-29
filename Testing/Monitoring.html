@@ -2,12 +2,47 @@
 
 <head>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+            background-image: url("background.jpg");
+            background-repeat: no-repeat;
+        }
+
+        table {
+            width: 1010px;
+            height: 700px;
+        }
+
+        table tr {
+            vertical-align: top;
+            margin: 0;
+        }
+
+        #controlls {
+            width: 420px;
+        }
+
+        #result {
+            margin-left: 300px;
+            width: 575px;
+            height: 665px;
+            overflow: hidden;
+            font-family: 'Lucida Console', 'Lucida Sans Typewriter', 'monaco', 'Bitstream Vera Sans Mono', 'monospace';
+            color: green;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="result" style="height: 600px;overflow:hidden"></div>
-    <button type="button" onclick="startPull()">Start</button>
-    <button type="button" onclick="stopPull()">Stop</button>
+
+    <div id="result"></div>
+
+    <div id="controlls">
+        <button type="button" onclick="startPull()">Start</button>
+        <button type="button" onclick="stopPull()">Stop</button>
+    </div>
+
     <script>
 
         var stopped = false;
@@ -33,7 +68,7 @@
                     type: 'DELETE',
                     headers: {
                         "Accept": "application/json",
-                        "Authorization": "SharedAccessSignature sr=https%3A%2F%2FWALL-E.servicebus.windows.net%2Ftelemetry&sig=uo6gQ8JkXku84dOQVKctzU2fYDwD16%2B6SsCLNYZAlsM%3D&se=1520866975&skn=Telemetry"
+                        "Authorization": "SharedAccessSignature sr=https%3a%2f%2fWALL-E.servicebus.windows.net%2ftelemetry%2fsubscriptions%2fmonitoring&sig=Sf%2bbxMDCuNfzZh7H0ASyUZCtRVwhfsvqvsIh%2bOcrM4s%3d&se=1829894623&skn=Telemetry"
                     },
                     success: function (data, textStatus, xhr) {
                         if (xhr.status != '200') return;
