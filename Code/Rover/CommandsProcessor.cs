@@ -65,9 +65,7 @@ namespace WALLE.Rover
             switch(moveCommand.Direction)
             {
                 case MoveDirection.Forward:
-                    {
                         break;
-                    }
 
                 case MoveDirection.Backward:
                     break;

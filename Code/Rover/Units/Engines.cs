@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WALLE.Rover.Dto.Commands;
 using WALLE.Rover.Dto.Telemetry;
 
 namespace WALLE.Rover.Units
@@ -17,17 +18,15 @@ namespace WALLE.Rover.Units
             _rightEngine = telemetryData.RightEngine;
         }
 
-        public void SetLeftEngineData(int direction, int speed, int runTimeMiliseconds)
+        public void SetLeftEngineData(MoveDirection direction, int runTimeMiliseconds)
         {
             _leftEngine.Direction = direction;
-            _leftEngine.Speed = speed;
             _leftEngine.RunTime = runTimeMiliseconds;
         }
 
-        public void SetRightEngineData(int direction, int speed, int runTimeMiliseconds)
+        public void SetRightEngineData(MoveDirection direction, int runTimeMiliseconds)
         {
             _rightEngine.Direction = direction;
-            _rightEngine.Speed = speed;
             _rightEngine.RunTime = runTimeMiliseconds;
         }
     }

@@ -1,10 +1,10 @@
-﻿namespace WALLE.Rover.Dto.Telemetry
+﻿using WALLE.Rover.Dto.Commands;
+
+namespace WALLE.Rover.Dto.Telemetry
 {
     internal class EngineData
     {
-        public int Direction { get; set; }
-
-        public int Speed { get; set; }
+        public MoveDirection Direction { get; set; }
 
         public int RunTime { get; set; }
     }
