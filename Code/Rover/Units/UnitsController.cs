@@ -11,6 +11,6 @@ namespace WALLE.Rover.Units
             _telemetryData = telemetryData;
         }
 
-        public Engines Engines => new Engines(_telemetryData);
+        public Engine[] Engines => new[] { new Engine(_telemetryData), new Engine(_telemetryData) };
     }
 }

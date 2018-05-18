@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using WALLE.Link;
-using WALLE.Rover.Dto;
 using WALLE.Rover.Dto.Telemetry;
 
 namespace WALLE.Rover

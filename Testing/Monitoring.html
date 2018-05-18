@@ -23,6 +23,10 @@
             width: 420px;
         }
 
+        #move-controlls {
+            padding-top: 40px;
+        }
+
         #result {
             margin-left: 300px;
             width: 575px;
@@ -41,6 +45,17 @@
     <div id="controlls">
         <button type="button" onclick="startPull()">Start</button>
         <button type="button" onclick="stopPull()">Stop</button>
+
+        <div id="move-controlls">
+            <button type="button" style="margin-left: 40px;" onclick="">Forward</button>
+            <br>
+            <br>
+            <button type="button" onclick="">Turn Left</button>
+            <button type="button" style="margin-left: 5px;" onclick="">Turn Right</button>
+            <br>
+            <br>
+            <button type="button" style="margin-left: 40px;" onclick="">Backward</button>
+        </div>
     </div>
 
     <script>
@@ -95,6 +110,14 @@
             if (result.children().length > 20) {
                 result.children().last().remove();
             }
+        }
+
+        var moveForward = function () {
+            
+        }
+
+        var moveBackward = function () {
+            
         }
 
         pullEvent();

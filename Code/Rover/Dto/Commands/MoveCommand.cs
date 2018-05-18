@@ -2,8 +2,9 @@
 {
     internal enum MoveDirection
     {
-        Forward = 0,
-        Backward = 1
+        None = 0,
+        Forward = 1,
+        Backward = 2
     }
 
     internal class MoveCommand

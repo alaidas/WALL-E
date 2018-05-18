@@ -18,6 +18,7 @@ namespace WALLE.Rover
         private readonly ILinkClient _linkClient;
         private readonly ILogger<CommandsProcessor> _logger;
         private readonly UnitsController _unitsController;
+        private CancellationToken _shutdownToken;
 
         public CommandsProcessor(ILinkClient linkClient, UnitsController unitsController, ILogger<CommandsProcessor> logger)
         {
@@ -26,18 +27,20 @@ namespace WALLE.Rover
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            using (_linkClient.SubscribeForCommands(ProcessCommand))
+            _shutdownToken = cancellationToken;
+
+            using (_linkClient.SubscribeForCommands(ProcessCommandAsync))
             {
-                while (!stoppingToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(10, stoppingToken);
+                    await Task.Delay(10, cancellationToken);
                 }
             }
         }
 
-        private void ProcessCommand(Event @event)
+        private async void ProcessCommandAsync(Event @event)
         {
             try
             {
@@ -47,46 +50,80 @@ namespace WALLE.Rover
                 switch (@event.ContentType)
                 {
                     case nameof(MoveCommand):
-                        ProcessMove(JsonConvert.DeserializeObject<MoveCommand>(json));
+                        await ProcessMoveAsync(JsonConvert.DeserializeObject<MoveCommand>(json), _shutdownToken);
+                        break;
+
+                    case nameof(TurnCommand):
+                        await ProcessTurnAsync(JsonConvert.DeserializeObject<TurnCommand>(json), _shutdownToken);
                         break;
 
                     default:
                         throw new NotSupportedException($"Not supported command: '{@event.ContentType}'");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
             }
         }
 
-        private void ProcessMove(MoveCommand moveCommand)
+        private async Task ProcessMoveAsync(MoveCommand moveCommand, CancellationToken cancellationToken)
         {
-            switch(moveCommand.Direction)
+            TimeSpan runtime = TimeSpan.FromMilliseconds(moveCommand.TimeInMiliseconds);
+
+            switch (moveCommand.Direction)
             {
                 case MoveDirection.Forward:
-                        break;
-
                 case MoveDirection.Backward:
-                    break;
+                    {
+                        _unitsController.Engines[0].SetEngine(moveCommand.Direction, runtime);
+                        _unitsController.Engines[1].SetEngine(moveCommand.Direction, runtime);
+
+                        await Task.Delay(runtime, cancellationToken);
+
+                        _unitsController.Engines[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
+                        _unitsController.Engines[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
+
+                        break;
+                    }
 
                 default:
                     throw new NotSupportedException($"Not supported direction: '{moveCommand.Direction}'");
             }
         }
 
-        private void ProcessTurn(TurnCommand turnCommand)
+        private async Task ProcessTurnAsync(TurnCommand turnCommand, CancellationToken cancellationToken)
         {
+            if (turnCommand.Angle <= 0 || turnCommand.Angle > 360) return;
+
+            TimeSpan runtime = TimeSpan.FromMilliseconds((double)(Decimal.Divide(14 * turnCommand.Angle, 2)));
+
+            MoveDirection leftEngine;
+            MoveDirection rigthEngine;
+
             switch (turnCommand.Direction)
             {
                 case TurnDirection.TrunLeft:
+                    leftEngine = MoveDirection.Backward;
+                    rigthEngine = MoveDirection.Forward;
                     break;
+
                 case TurnDirection.TurnRight:
+                    leftEngine = MoveDirection.Forward;
+                    rigthEngine = MoveDirection.Backward;
                     break;
 
                 default:
                     throw new NotSupportedException($"Not supported direction: '{turnCommand.Direction}'");
             }
+
+            _unitsController.Engines[0].SetEngine(leftEngine, runtime);
+            _unitsController.Engines[1].SetEngine(rigthEngine, runtime);
+
+            await Task.Delay(runtime, cancellationToken);
+
+            _unitsController.Engines[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
+            _unitsController.Engines[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
         }
     }
 }

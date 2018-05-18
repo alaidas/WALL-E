@@ -55,7 +55,7 @@ namespace WALLE.Rover
 
                 _logger.LogInformation($"{nameof(ConfigureServices)} is done");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;
@@ -78,7 +78,7 @@ namespace WALLE.Rover
 
                 _logger.LogInformation($"{nameof(Configure)} is done");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
                 throw;

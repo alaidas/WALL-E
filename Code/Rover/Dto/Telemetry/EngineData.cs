@@ -1,4 +1,5 @@
-﻿using WALLE.Rover.Dto.Commands;
+﻿using System;
+using WALLE.Rover.Dto.Commands;
 
 namespace WALLE.Rover.Dto.Telemetry
 {
@@ -6,6 +7,6 @@ namespace WALLE.Rover.Dto.Telemetry
     {
         public MoveDirection Direction { get; set; }
 
-        public int RunTime { get; set; }
+        public TimeSpan RunTime { get; set; }
     }
 }

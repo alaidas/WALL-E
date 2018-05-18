@@ -1,9 +1,9 @@
-﻿namespace WALLE.Rover.Dto.Telemetry
+﻿using System.Collections.Generic;
+
+namespace WALLE.Rover.Dto.Telemetry
 {
     internal class TelemetryData
     {
-        public EngineData LeftEngine { get; set; }
-
-        public EngineData RightEngine { get; set; }
+        public List<EngineData> EngineData => new List<EngineData>();
     }
 }
