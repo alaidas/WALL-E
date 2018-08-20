@@ -49,7 +49,7 @@ namespace WALLE.Link.Logging
             return null;
         }
 
-        private byte[] GetContent<TState>(LogLevel logLevel, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        private string GetContent<TState>(LogLevel logLevel, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             string json = JsonConvert.SerializeObject(new LogEvent
             {
@@ -58,7 +58,7 @@ namespace WALLE.Link.Logging
                 Message = formatter(state, exception)
             });
 
-            return Encoding.UTF8.GetBytes(json);
+            return json;
         }
     }
 }

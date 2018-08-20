@@ -5,7 +5,7 @@
     <style>
         body {
             background-color: black;
-            background-image: url("background.jpg");
+            /*background-image: url("background.jpg");*/
             background-repeat: no-repeat;
         }
 
@@ -47,14 +47,17 @@
         <button type="button" onclick="stopPull()">Stop</button>
 
         <div id="move-controlls">
-            <button type="button" style="margin-left: 40px;" onclick="">Forward</button>
+            <button type="button" style="margin-left: 40px;" onclick="moveForward()">Forward</button>
             <br>
             <br>
-            <button type="button" onclick="">Turn Left</button>
-            <button type="button" style="margin-left: 5px;" onclick="">Turn Right</button>
+            <button type="button" onclick="turnLeft()">Turn Left</button>
+            <button type="button" style="margin-left: 5px;" onclick="turnRight()">Turn Right</button>
             <br>
             <br>
-            <button type="button" style="margin-left: 40px;" onclick="">Backward</button>
+            <button type="button" style="margin-left: 40px;" onclick="moveBackward()">Backward</button>
+            <br>
+            <br>
+            <input id="SasKey" type="text" style="width: 800px">
         </div>
     </div>
 
@@ -112,12 +115,72 @@
             }
         }
 
+        var sendCommand = function (content) {
+            $.ajax(
+                {
+                    url: 'https://WALL-E.servicebus.windows.net/commands/messages',
+                    type: 'POST',
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": $('#SasKey').val()
+                    },
+                    data: content,
+                    success: function (data, textStatus, xhr) {
+                        if (xhr.status === 201) return;
+
+                        var content = JSON.stringify(data);
+                        alert(content);
+                    },
+                    error: function (error) {
+                        var content = JSON.stringify(error);
+                        alert(content);
+                    }
+                }
+            );
+        }
+
+        var sendMoveCommand = function (direction, timeInMiliseconds) {
+
+            sendCommand(JSON.stringify({
+                'id': '' + new Date(Date.now()).getTime() + '',
+                'creationTime': new Date(Date.now()).toJSON(),
+                'contentType': 'MoveCommand',
+                'sender': 'MonitoringWeb',
+                'content': JSON.stringify({
+                    'direction': direction,
+                    'timeInMiliseconds': timeInMiliseconds
+                })
+            }));
+        }
+
+        var sendTurnCommand = function (direction, angle) {
+
+            sendCommand(JSON.stringify({
+                'id': '' + new Date(Date.now()).getTime() + '',
+                'creationTime': new Date(Date.now()).toJSON(),
+                'contentType': 'TurnCommand',
+                'sender': 'MonitoringWeb',
+                'content': JSON.stringify({
+                    'direction': direction,
+                    'angle': angle
+                })
+            }));
+        }
+
         var moveForward = function () {
-            
+            sendMoveCommand(1, 1000);
         }
 
         var moveBackward = function () {
-            
+            sendMoveCommand(2, 1000);
+        }
+
+        var turnLeft = function () {
+            sendTurnCommand(1, 90);
+        }
+
+        var turnRight = function () {
+            sendTurnCommand(2, 90);
         }
 
         pullEvent();

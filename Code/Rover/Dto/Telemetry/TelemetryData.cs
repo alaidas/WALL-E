@@ -4,6 +4,6 @@ namespace WALLE.Rover.Dto.Telemetry
 {
     internal class TelemetryData
     {
-        public List<EngineData> EngineData => new List<EngineData>();
+        public readonly List<EngineData> EngineData = new List<EngineData>();
     }
 }

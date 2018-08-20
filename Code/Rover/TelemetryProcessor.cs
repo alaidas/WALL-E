@@ -41,7 +41,7 @@ namespace WALLE.Rover
                     CreationTime = DateTime.UtcNow,
                     Sender = "WALL-E Rover",
                     ContentType = nameof(TelemetryData),
-                    Content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_currentTelemetry))
+                    Content = JsonConvert.SerializeObject(_currentTelemetry)
                 }, cancellationToken);
             }
             catch(Exception ex)

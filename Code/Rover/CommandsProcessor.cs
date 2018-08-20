@@ -46,7 +46,7 @@ namespace WALLE.Rover
             {
                 Console.WriteLine($"Command is reveived: {JsonConvert.SerializeObject(@event)}");
 
-                string json = Encoding.UTF8.GetString(@event.Content);
+                string json = @event.Content;
                 switch (@event.ContentType)
                 {
                     case nameof(MoveCommand):
@@ -76,13 +76,13 @@ namespace WALLE.Rover
                 case MoveDirection.Forward:
                 case MoveDirection.Backward:
                     {
-                        _unitsController.Engines[0].SetEngine(moveCommand.Direction, runtime);
-                        _unitsController.Engines[1].SetEngine(moveCommand.Direction, runtime);
+                        _unitsController.WheelsEngine[0].SetEngine(moveCommand.Direction, runtime);
+                        _unitsController.WheelsEngine[1].SetEngine(moveCommand.Direction, runtime);
 
                         await Task.Delay(runtime, cancellationToken);
 
-                        _unitsController.Engines[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
-                        _unitsController.Engines[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
+                        _unitsController.WheelsEngine[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
+                        _unitsController.WheelsEngine[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
 
                         break;
                     }
@@ -117,13 +117,13 @@ namespace WALLE.Rover
                     throw new NotSupportedException($"Not supported direction: '{turnCommand.Direction}'");
             }
 
-            _unitsController.Engines[0].SetEngine(leftEngine, runtime);
-            _unitsController.Engines[1].SetEngine(rigthEngine, runtime);
+            _unitsController.WheelsEngine[0].SetEngine(leftEngine, runtime);
+            _unitsController.WheelsEngine[1].SetEngine(rigthEngine, runtime);
 
             await Task.Delay(runtime, cancellationToken);
 
-            _unitsController.Engines[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
-            _unitsController.Engines[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
+            _unitsController.WheelsEngine[0].SetEngine(MoveDirection.None, TimeSpan.Zero);
+            _unitsController.WheelsEngine[1].SetEngine(MoveDirection.None, TimeSpan.Zero);
         }
     }
 }

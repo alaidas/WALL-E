@@ -85,17 +85,24 @@ namespace WALLE.Link
 
                         while (!cancelToken.IsCancellationRequested)
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(url, cancelToken.Token);
-                            if (response == null || response.StatusCode != System.Net.HttpStatusCode.OK)
+                            try
                             {
-                                await Task.Delay(100, cancelToken.Token);
-                                continue;
+                                HttpResponseMessage response = await client.DeleteAsync(url, cancelToken.Token);
+                                if (response == null || response.StatusCode != System.Net.HttpStatusCode.OK)
+                                {
+                                    await Task.Delay(100, cancelToken.Token);
+                                    continue;
+                                }
+
+                                string json = await response.Content.ReadAsStringAsync();
+                                var @event = JsonConvert.DeserializeObject<Event>(json);
+
+                                events.Enqueue(@event);
                             }
-
-                            string json = await response.Content.ReadAsStringAsync();
-                            var @event = JsonConvert.DeserializeObject<Event>(json);
-
-                            events.Enqueue(@event);
+                            catch(Exception ex)
+                            {
+                                _logger.LogError(ex, ex.Message);
+                            }
                         }
                     }
                 }
@@ -115,10 +122,17 @@ namespace WALLE.Link
                 {
                     while (!cancelToken.IsCancellationRequested)
                     {
-                        if (events.TryDequeue(out Event @event))
-                            onEvent(@event);
+                        try
+                        {
+                            if (events.TryDequeue(out Event @event))
+                                onEvent(@event);
 
-                        await Task.Delay(50, cancelToken.Token);
+                            await Task.Delay(50, cancelToken.Token);
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogError(ex, ex.Message);
+                        }
                     }
                 }
                 catch (Exception ex)

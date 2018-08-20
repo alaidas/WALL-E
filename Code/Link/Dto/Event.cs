@@ -12,6 +12,6 @@ namespace WALLE.Link.Dto
 
         public string ContentType { get; set; }
 
-        public byte[] Content { get; set; }
+        public string Content { get; set; }
     }
 }
