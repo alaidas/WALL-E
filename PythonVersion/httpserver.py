@@ -33,14 +33,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
     def handle_http(self, status_code, path):
         self.send_response(status_code)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-type', 'application/json')
         self.end_headers()
-        content = '''
-        <html><head><title>Title goes here.</title></head>
-        <body><p>This is a test.</p>
-        <p>You accessed path: {}</p>
-        </body></html>
-        '''.format(path)
+        content = str({'path': path})
         return bytes(content, 'UTF-8')
 
 class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
